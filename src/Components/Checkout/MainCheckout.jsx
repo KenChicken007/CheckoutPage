@@ -66,6 +66,26 @@ const Content = () => {
                 {product.map((prod)=>(
                     <ProductList setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
                 ))}
+                {/* <div className="product-items">
+                    <div className="product">
+                        <h1>Product</h1>
+                        {product.map((prod)=>(
+                            <Productlist key={prod.id} prod={prod}/>
+                        ))}
+                    </div>
+                    <div className="quantity">
+                        <h1>Quantity</h1>
+                        {product.map((prod)=>(
+                        <QuantityList quantity={quantity} setQuantity={setQuantity} setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
+                        ))} 
+                        </div>
+                    <div className="price">
+                        <h1>Price</h1>
+                        {product.map((prod)=>(
+                        <Pricelist quantity={quantity} setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
+                        ))} 
+                    </div>
+                </div> */}
                 </div>
                 <TotalPrice totalPrice={totalPrice}/>
         </>
@@ -76,6 +96,7 @@ const ProductList = ({prod, setTotalPrice}) => {
     const [quantity, setQuantity] = useState(0);
     const {name,price} = prod;
     
+    //To update prices in Total Price section
     useEffect(() => {
         const productTotalPrice = price * quantity;
         setTotalPrice((prev) => prev + productTotalPrice);
@@ -105,9 +126,64 @@ const ProductList = ({prod, setTotalPrice}) => {
                     {quantity}
                     <button onClick={()=> increaseQuantity()}>+</button>
                 </div>
-                <div>
+                <div className="price">
                     ${price*quantity}
                 </div>
+            </div>
+        </>
+    );
+}
+
+const Productlist = ({prod}) => {
+    const {name} = prod;
+    return (
+        <>  
+            <div>
+                <img src="" alt="" />
+                {name}
+            </div>
+        </>
+    );
+}
+const QuantityList = ({prod, setTotalPrice, quantity, setQuantity}) => {
+    const {price} = prod;
+    
+    //To update prices in Total Price section
+    useEffect(() => {
+        const productTotalPrice = price * quantity;
+        setTotalPrice((prev) => prev + productTotalPrice);
+        return () => {
+          setTotalPrice((prev) => prev - productTotalPrice);
+        };
+      }, [quantity, price, setTotalPrice]);
+
+      function lowerQuantity(){
+        if (quantity> 0){
+        setQuantity(prev => prev - 1);
+        }
+      }
+
+      function increaseQuantity(){
+        setQuantity(prev => prev + 1);
+      }
+    return (
+        <>
+        <div className="btn">
+                    <button onClick={()=> lowerQuantity()}>-</button>
+                    {quantity}
+                    <button onClick={()=> increaseQuantity()}>+</button>
+                </div>
+
+        </>
+    );
+}
+
+const Pricelist = ({prod, quantity}) => {
+    const {name,price} = prod;
+    return (
+        <>
+            <div>
+                    ${price*quantity}
             </div>
         </>
     );
