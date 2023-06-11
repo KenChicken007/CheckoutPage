@@ -1,12 +1,23 @@
 import "../../style.css";
+import React from "react";
 import { useState, useEffect } from "react";
 import {Link} from 'react-router-dom'
 import Navbar from "./navbar";
-import { product } from "./product";
+import { product, CheckoutProvider, CheckoutContext } from "./product";
 
 const Content = () => {
     const [totalPrice, setTotalPrice] = useState(0);
-
+    const [productList, setProductList] = React.useContext(CheckoutContext);
+  
+    const handleSelectProduct = (event) => {
+        const selectedProduct = product.find((prod) => prod.name === event.target.value);
+        const productExists = productList.find((prod)=> prod.name === selectedProduct.name);      
+        
+        if (!productExists){
+            setProductList((prev) => [...prev, selectedProduct]);
+        }
+        console.log(productList);
+      };
 
     // const updateQuantity = (productId, newQuantity) => {
     //     setProduct((prevProducts) =>
@@ -32,6 +43,15 @@ const Content = () => {
                 </div>
             </form> 
 
+            <div className="product">
+                <h2>Select Product: </h2>
+                <select onChange={handleSelectProduct}>
+                    {product.map((prod)=>(
+                        <Dropdown key={prod.id} prod = {prod}/>
+                    ))}
+                </select>
+            </div>
+
             <div className="products">
                 <div className="products-content">
                     <h2>Products</h2>
@@ -39,19 +59,37 @@ const Content = () => {
                     <h2>Total Price</h2>
                 </div>
                 <br />
-                {product.map((prod)=>(
+                {productList.map((prod)=>(
                     <ProductList setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
                 ))}
-                </div>
+            </div>
                 <TotalPrice totalPrice={totalPrice}/>
         </>
     );
 }
 
+const Dropdown = ({ prod }) => {
+  
+    return (
+      <option value={prod.name}>
+        {prod.name}
+      </option>
+    );
+  };
+
 const ProductList = ({prod, setTotalPrice}) => {
     const [quantity, setQuantity] = useState(0);
     const {name,price} = prod;
+    const [, setProductList] = React.useContext(CheckoutContext);
     
+    useEffect(() => {
+        setProductList((prev) =>
+          prev.map((product) =>
+            product.id === prod.id ? { ...product, quantity } : product
+          )
+        );
+      }, [quantity, prod.id]);
+
     //To update prices in Total Price section
     useEffect(() => {
         const productTotalPrice = price * quantity;
@@ -108,16 +146,16 @@ const TotalPrice = ({ totalPrice }) => {
     );
   }
 
-  const handleChange = () => {
-
-  }
 export default function MainCheckout(){
+    
     return(
         <>
         <Navbar/>
         <div className="Outline">
-            <Content/>
-            <Button onClick={handleChange} to="/final" text="Check Out"/>
+            <CheckoutProvider>
+                <Content/>
+                <Button to="/final" text="Check Out"/>
+            </CheckoutProvider>
         </div>
         </>
     )

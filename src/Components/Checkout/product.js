@@ -1,3 +1,5 @@
+import React from "react";
+
 const product = [
   {
     id: 1,
@@ -25,4 +27,15 @@ const product = [
   },
 ];
 
-export { product };
+const CheckoutContext = React.createContext(null);
+
+const CheckoutProvider = ({ children }) => {
+  const [productList, setProductList] = React.useState([]);
+  return (
+    <CheckoutContext.Provider value={[productList, setProductList]}>
+      {children}
+    </CheckoutContext.Provider>
+  );
+};
+
+export { product, CheckoutProvider, CheckoutContext };

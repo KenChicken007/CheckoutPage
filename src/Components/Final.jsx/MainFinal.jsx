@@ -1,7 +1,8 @@
 import "../../style.css";
-import { Link } from "react-router-dom";
+import React from "react";
 import Navbar from "../Checkout/navbar";
 import { Button } from "../Checkout/MainCheckout";
+import { CheckoutProvider, CheckoutContext } from "../Checkout/product";
 
 const Thanks = () => {
     return(
@@ -15,6 +16,7 @@ const Thanks = () => {
 const OrderDetails = () => {
     var order_num = 115;
     var order_date = "May 8, 2021";
+    const [productList] = React.useContext(CheckoutContext);
     return(
         <div className="order-outline">
             <div className="order-info">
@@ -25,10 +27,39 @@ const OrderDetails = () => {
                 <h2>Date:</h2>
                 <p>{order_date}</p>
             </div>
-            <div></div>
-        </div>
+            <div className="order-info">
+                <div className="products-content">
+                    <h2>Product</h2>
+                    <h2>Quantity</h2>
+                    <h3>Price</h3>
+                </div>      
+                {productList.map((prod)=>(
+                    <Orders key={prod.id} prod={prod}/>
+                ))}
+                </div>
+            </div>
+        
     );
 };
+
+const Orders = ({prod}) => {
+    return(
+        <>
+            <div className="products-content">
+                <div>
+                    <img src="" alt="" />
+                    {prod.name}
+                </div>
+                <div>
+                    {prod.quantity}
+                </div>
+                <div>
+                    {prod.price}
+                </div>
+            </div>
+        </>
+    );
+}
 
 export default function MainFinal(){
     return(
@@ -36,7 +67,9 @@ export default function MainFinal(){
         <Navbar/>
         <div className="Outline">
             <Thanks/>
-            <OrderDetails/>
+            <CheckoutProvider>
+                <OrderDetails/>
+            </CheckoutProvider>
             <div className="btn-final">
                 <Button text="Print"/>
                 <Button to="/" text="Edit"/>
