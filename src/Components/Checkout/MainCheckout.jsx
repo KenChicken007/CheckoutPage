@@ -1,9 +1,9 @@
 import "../../style.css";
 import React from "react";
 import { useState, useEffect } from "react";
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import Navbar from "./navbar";
-import { product, CheckoutProvider, CheckoutContext } from "./product";
+import { product, CheckoutContext, CheckoutProvider } from "./product";
 
 const Content = () => {
     const [totalPrice, setTotalPrice] = useState(0);
@@ -35,11 +35,10 @@ const Content = () => {
         <>
             <form>
                 <div className="inputs">
-                <h1>User Info</h1>
-                <hr />
-                <label htmlFor="text">Name: </label>
-                <input type="text" placeholder="xyz" />
-                <br />
+                  <h1>User Info</h1>
+                  <hr />
+                  <label htmlFor="text">Name: </label>
+                  <input type="text" placeholder="xyz" />
                 </div>
             </form> 
 
@@ -64,6 +63,7 @@ const Content = () => {
                 ))}
             </div>
                 <TotalPrice totalPrice={totalPrice}/>
+                <Button totalPrice={totalPrice} to="/final" text="Check Out"/>
         </>
     );
 }
@@ -82,11 +82,12 @@ const ProductList = ({prod, setTotalPrice}) => {
     const {name,price} = prod;
     const [, setProductList] = React.useContext(CheckoutContext);
     
+    //To increase quantity in object
     useEffect(() => {
         setProductList((prev) =>
-          prev.map((product) =>
+          prev.map((product) =>  
             product.id === prod.id ? { ...product, quantity } : product
-          )
+        )
         );
       }, [quantity, prod.id]);
 
@@ -129,6 +130,7 @@ const ProductList = ({prod, setTotalPrice}) => {
 }
 
 const TotalPrice = ({ totalPrice }) => {
+
     return (
       <div className="total-price">
         <h1 style={{fontSize:"1.5rem"}}>Total Price: ${totalPrice}</h1>
@@ -137,9 +139,11 @@ const TotalPrice = ({ totalPrice }) => {
   };
 
   const Button = ({text, to}) => {
+    const [productList] = React.useContext(CheckoutContext);
+
     return(
         <div className="btn-checkout">
-            <Link to={to} className="btn-blue">
+            <Link to={to} className="btn-blue" state={{productList:productList}}>
                 {text}
             </Link>
         </div>
@@ -152,10 +156,9 @@ export default function MainCheckout(){
         <>
         <Navbar/>
         <div className="Outline">
-            <CheckoutProvider>
-                <Content/>
-                <Button to="/final" text="Check Out"/>
-            </CheckoutProvider>
+        <CheckoutProvider>
+            <Content/>
+        </CheckoutProvider>
         </div>
         </>
     )

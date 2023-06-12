@@ -1,8 +1,9 @@
 import "../../style.css";
 import React from "react";
 import Navbar from "../Checkout/navbar";
-import { Button } from "../Checkout/MainCheckout";
 import { CheckoutProvider, CheckoutContext } from "../Checkout/product";
+import { Link, useLocation} from "react-router-dom";
+
 
 const Thanks = () => {
     return(
@@ -16,7 +17,9 @@ const Thanks = () => {
 const OrderDetails = () => {
     var order_num = 115;
     var order_date = "May 8, 2021";
-    const [productList] = React.useContext(CheckoutContext);
+    const location = useLocation();
+    const productList = location.state.productList;
+    console.log(location)
     return(
         <div className="order-outline">
             <div className="order-info">
@@ -31,12 +34,12 @@ const OrderDetails = () => {
                 <div className="products-content">
                     <h2>Product</h2>
                     <h2>Quantity</h2>
-                    <h3>Price</h3>
                 </div>      
                 {productList.map((prod)=>(
                     <Orders key={prod.id} prod={prod}/>
                 ))}
                 </div>
+                
             </div>
         
     );
@@ -50,16 +53,35 @@ const Orders = ({prod}) => {
                     <img src="" alt="" />
                     {prod.name}
                 </div>
-                <div>
+                <div className="quantity">
                     {prod.quantity}
-                </div>
-                <div>
-                    {prod.price}
                 </div>
             </div>
         </>
     );
 }
+
+const EditButton = ({text, to}) => {
+
+    return(
+        <div className="btn-checkout">
+            <Link to={to} className="btn-blue">
+                {text}
+            </Link>
+        </div>
+    );
+  }
+
+  const PrintButton = ({text}) => {
+
+    return(
+        <div className="btn-checkout">
+            <div onClick={window.print} className="btn-blue">
+                {text}
+            </div>        
+        </div>
+    );
+  }
 
 export default function MainFinal(){
     return(
@@ -71,8 +93,8 @@ export default function MainFinal(){
                 <OrderDetails/>
             </CheckoutProvider>
             <div className="btn-final">
-                <Button text="Print"/>
-                <Button to="/" text="Edit"/>
+                <PrintButton text="Print"/>
+                <EditButton to="/" text="Edit"/>
             </div>
         </div>
     </div>
