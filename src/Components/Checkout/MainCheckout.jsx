@@ -4,11 +4,26 @@ import { useState, useEffect } from "react";
 import {Link, useNavigate} from 'react-router-dom'
 import Navbar from "./navbar";
 import { product, CheckoutContext, CheckoutProvider } from "./product";
+import axios from "axios";
 
 const Content = () => {
+
     const [totalPrice, setTotalPrice] = useState(0);
     const [productList, setProductList] = React.useContext(CheckoutContext);
-  
+    const [customerList, setCustomerList] = useState([]);
+    const addCustomer = async() => {
+      axios.post("http://localhost:3001/create", {
+        name: productList.name,
+      }).then(()=> {
+        setCustomerList([
+          ...customerList,
+          {
+            name: productList.name
+          }
+        ])
+      })
+    }
+
     const handleSelectProduct = (event) => {
         const selectedProduct = product.find((prod) => prod.name === event.target.value);
         const productExists = productList.find((prod)=> prod.name === selectedProduct.name);      
