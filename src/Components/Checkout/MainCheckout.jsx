@@ -10,19 +10,31 @@ const Content = () => {
 
     const [totalPrice, setTotalPrice] = useState(0);
     const [productList, setProductList] = React.useContext(CheckoutContext);
-    const [customerList, setCustomerList] = useState([]);
+    const [name,setName] = useState("");
+
     const addCustomer = async() => {
+      
+      try{
+        axios.post("http://localhost:3001/create", {
+          name:name,
+        })
+
+        for (const product of productList) {
       axios.post("http://localhost:3001/create", {
-        name: productList.name,
-      }).then(()=> {
-        setCustomerList([
-          ...customerList,
-          {
-            name: productList.name
-          }
-        ])
+        product_name: product.name,
+        product_price: product.price,
+        product_quantity: product.quantity,
       })
+      console.log("Working");
+    };
     }
+     catch(error){
+      console.log(error);
+    }
+    
+  }
+
+
 
     const handleSelectProduct = (event) => {
         const selectedProduct = product.find((prod) => prod.name === event.target.value);
@@ -31,7 +43,7 @@ const Content = () => {
         if (!productExists){
             setProductList((prev) => [...prev, selectedProduct]);
         }
-        console.log(productList);
+        
       };
 
     // const updateQuantity = (productId, newQuantity) => {
@@ -53,7 +65,9 @@ const Content = () => {
                   <h1>User Info</h1>
                   <hr />
                   <label htmlFor="text">Name: </label>
-                  <input type="text" placeholder="xyz" />
+                  <input onChange={(e)=> setName(e.target.value)} type="text" placeholder="xyz" required/>
+                  {console.log(name)}
+                  <button>Submit</button>
                 </div>
             </form> 
 
@@ -78,7 +92,7 @@ const Content = () => {
                 ))}
             </div>
                 <TotalPrice totalPrice={totalPrice}/>
-                <Button totalPrice={totalPrice} to="/final" text="Check Out"/>
+                <Button addCustomer={addCustomer} totalPrice={totalPrice} to="/final" text="Check Out"/>
         </>
     );
 }
@@ -153,12 +167,12 @@ const TotalPrice = ({ totalPrice }) => {
     );
   };
 
-  const Button = ({text, to}) => {
+  const Button = ({text, to, addCustomer}) => {
     const [productList] = React.useContext(CheckoutContext);
 
     return(
         <div className="btn-checkout">
-            <Link to={to} className="btn-blue" state={{productList:productList}}>
+            <Link onClick={addCustomer} to={to} className="btn-blue" state={{productList:productList}}>
                 {text}
             </Link>
         </div>
