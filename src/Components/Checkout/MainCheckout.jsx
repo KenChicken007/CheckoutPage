@@ -1,5 +1,5 @@
 import "../../style.css";
-import React from "react";
+import React, { useContext } from "react";
 import { useState, useEffect } from "react";
 import {Link, useNavigate} from 'react-router-dom'
 import Navbar from "./navbar";
@@ -9,7 +9,7 @@ import axios from "axios";
 const Content = () => {
 
     const [totalPrice, setTotalPrice] = useState(0);
-    const [productList, setProductList] = React.useContext(CheckoutContext);
+    const [productList, setProductList] = useContext(CheckoutContext);
     const [name,setName] = useState("");
 
     const addCustomer = async() => {
@@ -84,11 +84,12 @@ const Content = () => {
                 <div className="products-content">
                     <h2>Products</h2>
                     <h2>Quantity</h2>
-                    <h2>Total Price</h2>
+                    <h2 className="total-price">Total Price</h2>
+                    <h2></h2>
                 </div>
                 <br />
-                {productList.map((prod)=>(
-                    <ProductList setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
+                {productList.map((prod, index)=>(
+                    <ProductList index={index} setTotalPrice={setTotalPrice} key={prod.id} prod={prod}/>
                 ))}
             </div>
                 <TotalPrice totalPrice={totalPrice}/>
@@ -106,10 +107,10 @@ const Dropdown = ({ prod }) => {
     );
   };
 
-const ProductList = ({prod, setTotalPrice}) => {
+const ProductList = ({prod, setTotalPrice, index}) => {
     const [quantity, setQuantity] = useState(0);
     const {name,price} = prod;
-    const [, setProductList] = React.useContext(CheckoutContext);
+    const [, setProductList] = useContext(CheckoutContext);
     
     //To increase quantity in object
     useEffect(() => {
@@ -153,9 +154,26 @@ const ProductList = ({prod, setTotalPrice}) => {
                 <div className="price">
                     ${price*quantity}
                 </div>
+                <Delete index={index}/>
             </div>
         </>
     );
+}
+
+const Delete = ({index}) => {
+  const [productList, setProductList] = useContext(CheckoutContext);
+  const handleDelete = (e) => {
+      const Updatedproduct = (productList.filter((prod, i)=> i !== index));
+      setProductList(Updatedproduct);
+      console.log(index);
+  }
+  return(
+        <>
+          <div onClick={handleDelete} data-index={index} className="delete">
+              <img src={require("../../Images/delete-button-svgrepo-com.svg").default} alt="" />
+          </div>
+        </>
+  );
 }
 
 const TotalPrice = ({ totalPrice }) => {
@@ -168,7 +186,7 @@ const TotalPrice = ({ totalPrice }) => {
   };
 
   const Button = ({text, to, addCustomer}) => {
-    const [productList] = React.useContext(CheckoutContext);
+    const [productList] = useContext(CheckoutContext);
 
     return(
         <div className="btn-checkout">

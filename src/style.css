@@ -107,6 +107,25 @@
     justify-content: flex-end;
   }
 
+  .delete{
+    display: flex;
+    justify-content: flex-end;
+    cursor: pointer;
+  }
+
+  .delete >img:hover{
+    transform: scale(1.2);
+  }
+
+  .delete >img{
+    width: 30px;
+  }
+
+  .quantity{
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .btn-checkout{
     display: flex;
     justify-content: flex-end;
@@ -171,9 +190,4 @@
     background-color: rgba(221, 218, 218, 0.39);
     margin-bottom: 2rem;
     padding: 1rem;
-  }
-
-  .quantity{
-    display: flex;
-    justify-content: center;
   }
