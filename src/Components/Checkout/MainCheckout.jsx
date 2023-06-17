@@ -15,18 +15,11 @@ const Content = () => {
     const addCustomer = async() => {
       
       try{
-        axios.post("http://localhost:3001/create", {
-          name:name,
-        })
-
-        for (const product of productList) {
       axios.post("http://localhost:3001/create", {
-        product_name: product.name,
-        product_price: product.price,
-        product_quantity: product.quantity,
+        name:name,
+        productList: productList,
       })
       console.log("Working");
-    };
     }
      catch(error){
       console.log(error);
