@@ -3,7 +3,6 @@ const app = express();
 
 const mysql = require("mysql2");
 const cors = require("cors");
-const { useRef, useState } = require("react");
 
 app.use(cors());
 app.use(express.json());
@@ -12,12 +11,12 @@ const db = mysql.createConnection({
   user: "root",
   host: "localhost",
   password: "admin",
-  database: "checkout",
+  database: "Checkout_Page",
 });
 
 const insertOrder = (name) => {
   return new Promise((resolve, reject) => {
-    const query = "INSERT INTO Orders (name, date) VALUES (?, NOW())";
+    const query = "INSERT INTO Orders (name, date) VALUES (?, CURDATE())";
     db.query(query, [name], (err, result) => {
       if (err) {
         console.log(err);
@@ -54,39 +53,101 @@ const insertOrderItem = (orderId, productId) => {
     db.query(query, [productId, orderId], (err, result) => {
       if (err) {
         console.log(err);
+        reject(err);
+      } else {
+        resolve(result);
       }
     });
   });
 };
 
+const updatePrice = (orderId) => {
+  return new Promise((resolve, reject) => {
+    const query =
+      "UPDATE Orders SET total_price = ( SELECT SUM(product_price*product_quantity) FROM Products WHERE Products.product_id IN ( SELECT product_id FROM Order_Item WHERE Order_Item.order_id = Orders.order_id ) )  WHERE order_id = ?";
+    db.query(query, [orderId], (err, result) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+};
+
+const updateOrder = () => {
+  return new Promise((resolve, reject) => {
+    const query = "UPDATE orders SET name = ? WHERE order_id = ? ";
+  });
+};
+
 app.post("/create", async (req, res) => {
   const name = req.body.name;
-  const product_name = req.body.product_name;
-  const product_price = req.body.product_price;
-  const product_quantity = req.body.product_quantity;
+  const productList = req.body.productList;
 
   try {
-    console.log(name, product_name, product_price, product_quantity);
-
     const orderResult = await insertOrder(name);
     const orderId = orderResult.insertId;
     console.log("OrderID:", orderId);
 
-    const productResult = await insertProduct(
-      product_name,
-      product_price,
-      product_quantity
-    );
-    const productId = productResult.insertId;
-    console.log("productID:", productId);
+    const promise = productList.map(async (product) => {
+      const productResult = await insertProduct(
+        product.name,
+        product.price,
+        product.quantity
+      );
 
-    await insertOrderItem(orderId, productId);
-    console.log(orderId, productId);
+      const productId = productResult.insertId;
+      console.log("productID: ", productId);
+
+      await insertOrderItem(orderId, productId);
+      await updatePrice(orderId);
+    });
+
+    await Promise.all(promise);
+
     res.send("Values Inserted");
   } catch (err) {
     console.error("Error executing queries:", err);
     res.status(500).send("Error occurred");
   }
+});
+
+app.get("/list", (req, res) => {
+  db.query("SELECT * FROM Orders", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.get("/final", (req, res) => {
+  db.query("SELECT * FROM Orders", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.get("/products/:orderId", (req, res) => {
+  const orderID = req.params.orderId;
+
+  const query = `SELECT product_name,product_quantity,product_price
+                  FROM  Products WHERE product_id IN 
+                  (SELECT product_id FROM order_item WHERE order_id = ?)`;
+
+  db.query(query, [orderID], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
 });
 
 app.listen(3001, () => {

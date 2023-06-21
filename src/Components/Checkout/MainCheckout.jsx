@@ -1,7 +1,7 @@
 import "../../style.css";
 import React, { useContext } from "react";
 import { useState, useEffect } from "react";
-import {Link, useNavigate} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import Navbar from "./navbar";
 import { product, CheckoutContext, CheckoutProvider } from "./product";
 import axios from "axios";
@@ -11,10 +11,10 @@ const Content = () => {
     const [totalPrice, setTotalPrice] = useState(0);
     const [productList, setProductList] = useContext(CheckoutContext);
     const [name,setName] = useState("");
-
+    
+    //Adding orders to mysql
     const addCustomer = async() => {
-      
-      try{
+    try{
       axios.post("http://localhost:3001/create", {
         name:name,
         productList: productList,
@@ -24,10 +24,7 @@ const Content = () => {
      catch(error){
       console.log(error);
     }
-    
   }
-
-
 
     const handleSelectProduct = (event) => {
         const selectedProduct = product.find((prod) => prod.name === event.target.value);
@@ -36,7 +33,6 @@ const Content = () => {
         if (!productExists){
             setProductList((prev) => [...prev, selectedProduct]);
         }
-        
       };
 
     // const updateQuantity = (productId, newQuantity) => {
@@ -59,7 +55,6 @@ const Content = () => {
                   <hr />
                   <label htmlFor="text">Name: </label>
                   <input onChange={(e)=> setName(e.target.value)} type="text" placeholder="xyz" required/>
-                  {console.log(name)}
                   <button>Submit</button>
                 </div>
             </form> 
@@ -86,13 +81,13 @@ const Content = () => {
                 ))}
             </div>
                 <TotalPrice totalPrice={totalPrice}/>
-                <Button addCustomer={addCustomer} totalPrice={totalPrice} to="/final" text="Check Out"/>
+                <Button addCustomer={addCustomer} to="/final" text="Check Out"/>
+                <Button to="/list" text="All Orders" />
         </>
     );
 }
 
 const Dropdown = ({ prod }) => {
-  
     return (
       <option value={prod.name}>
         {prod.name}
@@ -100,6 +95,7 @@ const Dropdown = ({ prod }) => {
     );
   };
 
+  
 const ProductList = ({prod, setTotalPrice, index}) => {
     const [quantity, setQuantity] = useState(0);
     const {name,price} = prod;
@@ -158,7 +154,6 @@ const Delete = ({index}) => {
   const handleDelete = (e) => {
       const Updatedproduct = (productList.filter((prod, i)=> i !== index));
       setProductList(Updatedproduct);
-      console.log(index);
   }
   return(
         <>

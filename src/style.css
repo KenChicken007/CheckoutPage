@@ -183,11 +183,34 @@
   }
   }
 
+  .orders{
+    background-color: rgba(221, 218, 218, 0.39);
+  }
+
+  .order{
+    height: 5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    background-color: #fff;
+    margin: 2rem;
+    padding-left: 1rem;
+    cursor: pointer;
+  }
+
+  .order > h2{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
   .order-outline{
     padding-bottom: 2rem;
   }
+
   .order-info{
     background-color: rgba(221, 218, 218, 0.39);
     margin-bottom: 2rem;
     padding: 1rem;
   }
+
+  

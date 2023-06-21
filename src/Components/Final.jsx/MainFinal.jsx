@@ -1,9 +1,61 @@
 import "../../style.css";
-import React from "react";
+import React, { useEffect,useRef,useState } from "react";
 import Navbar from "../Checkout/navbar";
-import { CheckoutProvider, CheckoutContext } from "../Checkout/product";
 import { Link, useLocation} from "react-router-dom";
+import Axios from "axios";
 
+export default function MainFinal(){
+    const [relevantProduct, setRelevantProduct] = useState([]);
+    const order = useRef([]);
+    const location = useLocation();
+    console.log(location);
+    // const orderList = location.state.order;
+    const orderList = location.state.order ?? {};
+    const productList = (location.state.productList ? location.state.productList : relevantProduct);   
+
+    const fetchRelevantProduct = async () => {
+        console.log("Working 1");
+        try{
+            const response = await Axios.get(
+                `http://localhost:3001/products/${orderList.order_id}`
+            );
+            setRelevantProduct((response.data).map((d)=> ([{...d}][0])));
+        } catch (error){
+            console.log(error);
+        }
+    }
+    
+    const fetchOrder = async () => {
+        console.log("Working 2");
+        await Axios.get("http://localhost:3001/final")
+        .then((res) => {
+            order.current = res.data[res.data.length-1];
+            console.log(order.current);
+        })
+    }
+
+    useEffect(()=> {
+          if (orderList)
+            fetchRelevantProduct();
+          else
+            fetchOrder();
+    }, [order]);
+    
+    return(
+    <div>
+        <Navbar/>
+        <div className="Outline">
+            <Thanks/>
+            <OrderDetails order={order.current} orderList={orderList} productList={productList}/>
+            <div className="btn-final">
+                <PrintButton text="Print"/>
+                <BackButton to="/" text="Edit"/>
+                <BackButton to="/" text="New" />
+            </div>
+        </div>
+    </div>
+    );
+}
 
 const Thanks = () => {
     return(
@@ -14,12 +66,13 @@ const Thanks = () => {
     );
 }
 
-const OrderDetails = () => {
-    var order_num = 115;
-    var order_date = "May 8, 2021";
-    const location = useLocation();
-    const productList = location.state.productList;
-    console.log(location)
+const OrderDetails = ({order, orderList, productList}) => {
+    console.log("Order:", order);
+    //Line doesn't work when adding a new product
+    //Order Details runs before useEffect causing an undefined 
+    var order_num = (order?.length>1 ? order.order_id : orderList.order_id);
+    var order_date = (order?.length>1 ? order.date : orderList.date);
+    
     return(
         <div className="order-outline">
             <div className="order-info">
@@ -27,7 +80,7 @@ const OrderDetails = () => {
                 <p>{order_num}</p>
             </div>
             <div className="order-info">
-                <h2>Date:</h2>
+                <h2>Date</h2>
                 <p>{order_date}</p>
             </div>
             <div className="order-info">
@@ -36,7 +89,7 @@ const OrderDetails = () => {
                     <h2>Quantity</h2>
                 </div>      
                 {productList.map((prod)=>(
-                    <Orders key={prod.id} prod={prod}/>
+                    <Orders key={prod.id || prod.product_id} prod={prod}/>
                 ))}
                 </div>
                 
@@ -51,17 +104,17 @@ const Orders = ({prod}) => {
             <div className="products-content">
                 <div>
                     <img src="" alt="" />
-                    {prod.name}
+                    {prod.name || prod.product_name}
                 </div>
                 <div className="quantity">
-                    {prod.quantity}
+                    {prod.quantity || prod.product_quantity}
                 </div>
             </div>
         </>
     );
 }
 
-const EditButton = ({text, to}) => {
+const BackButton = ({text, to}) => {
 
     return(
         <div className="btn-checkout">
@@ -83,20 +136,3 @@ const EditButton = ({text, to}) => {
     );
   }
 
-export default function MainFinal(){
-    return(
-    <div>
-        <Navbar/>
-        <div className="Outline">
-            <Thanks/>
-            <CheckoutProvider>
-                <OrderDetails/>
-            </CheckoutProvider>
-            <div className="btn-final">
-                <PrintButton text="Print"/>
-                <EditButton to="/" text="Edit"/>
-            </div>
-        </div>
-    </div>
-    );
-}
