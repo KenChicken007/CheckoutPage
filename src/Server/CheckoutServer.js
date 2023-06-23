@@ -114,6 +114,50 @@ app.post("/create", async (req, res) => {
   }
 });
 
+const updateProduct = (name, price, quantity, orderId) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+    UPDATE Products
+    JOIN order_item ON Products.product_id = order_item.product_id
+    JOIN orders ON order_item.order_id = orders.order_id
+    SET Products.product_name = ?, Products.product_quantity = ?, Products.product_price = ?
+    WHERE orders.order_id = 1 `;
+
+    db.query(query, [name, price, quantity, orderId], (err, result) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+};
+
+app.post("/update", async (req, res) => {
+  const productList = req.body.productList;
+  const orderId = req.body.orderId;
+  console.log(orderId);
+  try {
+    const promise = productList.map(async (product) => {
+      await updateProduct(
+        product.name,
+        product.price,
+        product.quantity,
+        orderId
+      );
+      await updatePrice(orderId);
+    });
+
+    await Promise.all(promise);
+
+    res.send("Values Inserted");
+  } catch (err) {
+    console.error("Error executing queries:", err);
+    res.status(500).send("Error occurred");
+  }
+});
+
 app.get("/list", (req, res) => {
   db.query("SELECT * FROM Orders", (err, result) => {
     if (err) {

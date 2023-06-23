@@ -3,22 +3,23 @@ import React, { useEffect,useRef,useState } from "react";
 import Navbar from "../Checkout/navbar";
 import { Link, useLocation} from "react-router-dom";
 import Axios from "axios";
+import { LinkButton } from "../Checkout/MainCheckout";
 
 export default function MainFinal(){
     const [relevantProduct, setRelevantProduct] = useState([]);
     const order = useRef([]);
     const location = useLocation();
-    console.log(location);
+    
     // const orderList = location.state.order;
     const orderList = location.state.order ?? {};
     const productList = (location.state.productList ? location.state.productList : relevantProduct);   
-
+    console.log(orderList);
     const fetchRelevantProduct = async () => {
-        console.log("Working 1");
         try{
             const response = await Axios.get(
                 `http://localhost:3001/products/${orderList.order_id}`
             );
+            console.log("Resp: ",response);
             setRelevantProduct((response.data).map((d)=> ([{...d}][0])));
         } catch (error){
             console.log(error);
@@ -26,11 +27,9 @@ export default function MainFinal(){
     }
     
     const fetchOrder = async () => {
-        console.log("Working 2");
         await Axios.get("http://localhost:3001/final")
         .then((res) => {
             order.current = res.data[res.data.length-1];
-            console.log(order.current);
         })
     }
 
@@ -49,8 +48,9 @@ export default function MainFinal(){
             <OrderDetails order={order.current} orderList={orderList} productList={productList}/>
             <div className="btn-final">
                 <PrintButton text="Print"/>
-                <BackButton to="/" text="Edit"/>
+                <BackButton orderList={orderList} OldProductList={productList} to="/" text="Edit"/>
                 <BackButton to="/" text="New" />
+                <LinkButton to="/list" text="All Orders" />
             </div>
         </div>
     </div>
@@ -67,9 +67,8 @@ const Thanks = () => {
 }
 
 const OrderDetails = ({order, orderList, productList}) => {
-    console.log("Order:", order);
     //Line doesn't work when adding a new product
-    //Order Details runs before useEffect causing an undefined 
+    //Order Details runs before useEffect causing an undefined order for a few seconds
     var order_num = (order?.length>1 ? order.order_id : orderList.order_id);
     var order_date = (order?.length>1 ? order.date : orderList.date);
     
@@ -114,17 +113,18 @@ const Orders = ({prod}) => {
     );
 }
 
-const BackButton = ({text, to}) => {
-
-    return(
+const BackButton = ({text, to, OldProductList, orderList}) => {
+    const orderID = orderList?.order_id;
+    console.log("Order ID: ",orderID);
+    return( 
         <div className="btn-checkout">
-            <Link to={to} className="btn-blue">
+            <Link to={to} state={{OldProductList:OldProductList, orderID:orderID}} className="btn-blue">
                 {text}
             </Link>
         </div>
     );
   }
-
+  
   const PrintButton = ({text}) => {
 
     return(

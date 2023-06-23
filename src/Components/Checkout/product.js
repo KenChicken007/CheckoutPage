@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 const product = [
   {
@@ -31,8 +31,13 @@ const CheckoutContext = React.createContext(null);
 
 const CheckoutProvider = ({ children }) => {
   const [productList, setProductList] = React.useState([]);
+  const [totalPrice, setTotalPrice] = React.useState(0);
+  console.log(totalPrice);
+
   return (
-    <CheckoutContext.Provider value={[productList, setProductList]}>
+    <CheckoutContext.Provider
+      value={[productList, setProductList, totalPrice, setTotalPrice]}
+    >
       {children}
     </CheckoutContext.Provider>
   );
