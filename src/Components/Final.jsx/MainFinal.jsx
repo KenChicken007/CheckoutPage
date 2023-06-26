@@ -10,15 +10,18 @@ export default function MainFinal(){
     const order = useRef([]);
     const location = useLocation();
     
-    // const orderList = location.state.order;
+    
     const orderList = location.state.order ?? {};
+    const orderID = orderList?.order_id;
     const productList = (location.state.productList ? location.state.productList : relevantProduct);   
-    console.log(orderList);
+    console.log("Orders: ",productList);
+
     const fetchRelevantProduct = async () => {
         try{
             const response = await Axios.get(
                 `http://localhost:3001/products/${orderList.order_id}`
             );
+            
             console.log("Resp: ",response);
             setRelevantProduct((response.data).map((d)=> ([{...d}][0])));
         } catch (error){
@@ -34,10 +37,12 @@ export default function MainFinal(){
     }
 
     useEffect(()=> {
-          if (orderList)
+          if (orderList){
             fetchRelevantProduct();
-          else
+          }
+          else {
             fetchOrder();
+          }
     }, [order]);
     
     return(
@@ -48,8 +53,8 @@ export default function MainFinal(){
             <OrderDetails order={order.current} orderList={orderList} productList={productList}/>
             <div className="btn-final">
                 <PrintButton text="Print"/>
-                <BackButton orderList={orderList} OldProductList={productList} to="/" text="Edit"/>
-                <BackButton to="/" text="New" />
+                {orderID && <EditButton orderList={orderList} OldProductList={productList} to="/" text="Edit"/>}
+                <NewButton to="/" text="New" />
                 <LinkButton to="/list" text="All Orders" />
             </div>
         </div>
@@ -113,9 +118,7 @@ const Orders = ({prod}) => {
     );
 }
 
-const BackButton = ({text, to, OldProductList, orderList}) => {
-    const orderID = orderList?.order_id;
-    console.log("Order ID: ",orderID);
+const EditButton = ({text, to, OldProductList, orderID}) => {
     return( 
         <div className="btn-checkout">
             <Link to={to} state={{OldProductList:OldProductList, orderID:orderID}} className="btn-blue">
@@ -125,6 +128,15 @@ const BackButton = ({text, to, OldProductList, orderList}) => {
     );
   }
   
+  const NewButton = ({text, to}) => {
+    return(
+        <div className="btn-checkout">
+        <Link to={to} className="btn-blue">
+            {text}
+        </Link>
+    </div>
+    );
+  }
   const PrintButton = ({text}) => {
 
     return(

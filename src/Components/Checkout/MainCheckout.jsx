@@ -10,19 +10,29 @@ import { useLocation } from "react-router-dom";
 const Content = () => {
     const [productList, setProductList,] = useContext(CheckoutContext);
     const [name,setName] = useState("");
+
     //Get the product List from final page
     const location = useLocation();
-    const [orderId, setOrderId] = useState(0);
-    
+    const orderId = useRef(0);
+    console.log(location);
+    const len = useRef(0);
+
     useEffect(()=> {
-      if (location.state) {
+      if (location.state){
         const OldProductList = location.state.OldProductList;
-        setOrderId(location.state.orderId);
-        console.log("OrderId: ", orderId);
-        setProductList(OldProductList);
+        const updatedProductList = OldProductList.map((oldProduct) => ({
+          id : oldProduct.product_id,
+          name: oldProduct.product_name,
+          price: oldProduct.product_price,
+          quantity: oldProduct.product_quantity,
+        }));
+        len.current = OldProductList.length;
+        console.log("Length: ",len.current);
+        setProductList(updatedProductList);
+        orderId.current = location.state.orderID;
       }
     }, []);
-    
+    console.log(productList);
 
     //Adding orders to mysql
     const addCustomer = async() => {
@@ -43,7 +53,8 @@ const Content = () => {
       axios.post("http://localhost:3001/update", {
         name: name,
         productList: productList,
-        orderId: orderId,
+        orderId: orderId.current,
+        len: len.current,
       })
     } catch (error) {
       console.log(error);
@@ -51,8 +62,8 @@ const Content = () => {
   }
 
     const handleSelectProduct = (event) => {
-        const selectedProduct = product.find((prod) => prod.name === event.target.value);
-        const productExists = productList.find((prod)=> prod.name === selectedProduct.name);      
+        const selectedProduct = product.find((prod) => (prod.name) === event.target.value);
+        const productExists = productList.find((prod)=> (prod.name) === selectedProduct.name);      
         
         if (!productExists){
             setProductList((prev) => [...prev, selectedProduct]);
@@ -79,7 +90,7 @@ const Content = () => {
                   <hr />
                   <label htmlFor="text">Name: </label>
                   <input onChange={(e)=> setName(e.target.value)} type="text" placeholder="xyz" required/>
-                  <button>Submit</button>
+                  
                 </div>
             </form> 
 
@@ -122,33 +133,34 @@ const Dropdown = ({ prod }) => {
   
 const ProductList = ({prod, index}) => {
     const [quantity, setQuantity] = useState(0);
-    const {name,price, product_name, product_price, product_quantity} = prod;
+    const {name,price} = prod;
     const location = useLocation();
-    const [,setProductList , totalPrice, setTotalPrice] = useContext(CheckoutContext);
+    const [,setProductList , , setTotalPrice] = useContext(CheckoutContext);
+    
+    useEffect(()=> {
+      if (location.state){
+          setQuantity(0);
+      }
+    }, []);
 
     //To increase quantity in object
     useEffect(() => {
         setProductList((prev) =>
           prev.map((product) =>  
-            product.id === prod.id ? { ...product, quantity } : product
+            product.name === prod.name ? { ...product, quantity } : product
         )
         );
-      }, [quantity, prod.id]);
+      }, [quantity]);
 
-      useEffect(()=> {
-        if (location.state){
-        setQuantity(product_quantity);
-        }
-      }, []);
-
+    
     //To update prices in Total Price section
     useEffect(() => {
-      const productTotalPrice = ((price || product_price)*(quantity));
+      const productTotalPrice = ((price)*(quantity));
         setTotalPrice((prev) => prev + productTotalPrice);
         return () => {
           setTotalPrice((prev) => prev - productTotalPrice);
         };
-      }, [quantity, price, setTotalPrice]);
+      }, [quantity , price, setTotalPrice]);
 
       function lowerQuantity(){
         if (quantity> 0){
@@ -164,7 +176,7 @@ const ProductList = ({prod, index}) => {
             <div className="products-content">
                 <div>
                     <img src="" alt="" />
-                    {name || product_name}
+                    {name}
                 </div>
                 <div className="btn">
                     <button onClick={()=> lowerQuantity()}>-</button>
@@ -172,7 +184,7 @@ const ProductList = ({prod, index}) => {
                     <button onClick={()=> increaseQuantity()}>+</button>
                 </div>
                 <div className="price">
-                    ${(price || product_price)*(quantity)}
+                    ${(price)*(quantity)}
                 </div>
                 <Delete index={index}/>
             </div>
@@ -182,7 +194,7 @@ const ProductList = ({prod, index}) => {
 
 const Delete = ({index}) => {
   const [productList, setProductList,] = useContext(CheckoutContext);
-  const handleDelete = (e) => {
+  const handleDelete = () => {
       const Updatedproduct = (productList.filter((prod, i)=> i !== index));
       setProductList(Updatedproduct);
   }
@@ -227,7 +239,6 @@ const TotalPrice = () => {
   }
 
 export default function MainCheckout(){
-    
     return(
         <>
         <Navbar/>
