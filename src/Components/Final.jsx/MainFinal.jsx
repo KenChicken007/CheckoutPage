@@ -1,5 +1,5 @@
 import "../../style.css";
-import React, { useEffect,useRef,useState } from "react";
+import React, { useEffect ,useState } from "react";
 import Navbar from "../Checkout/navbar";
 import { Link, useLocation} from "react-router-dom";
 import Axios from "axios";
@@ -7,14 +7,15 @@ import { LinkButton } from "../Checkout/MainCheckout";
 
 export default function MainFinal(){
     const [relevantProduct, setRelevantProduct] = useState([]);
-    const order = useRef([]);
+    const [order, setOrder] = useState([]);
     const location = useLocation();
     
-    
     const orderList = location.state.order ?? {};
-    const orderID = orderList?.order_id;
-    const productList = (location.state.productList ? location.state.productList : relevantProduct);   
-    console.log("Orders: ",productList);
+    const orderID =   orderList.order_id ?? order.order_id; 
+    const orderDate = orderList.date ?? order.date;
+    const productList = (location.state.productList ? location.state.productList : relevantProduct);
+    console.log("Products: ",productList);
+    console.log("Order Date: ", orderDate);
 
     const fetchRelevantProduct = async () => {
         try{
@@ -28,29 +29,29 @@ export default function MainFinal(){
             console.log(error);
         }
     }
-    
+
     const fetchOrder = async () => {
         await Axios.get("http://localhost:3001/final")
         .then((res) => {
-            order.current = res.data[res.data.length-1];
+            setOrder(res.data[res.data.length-1]);
+            console.log(order.order_id);
         })
     }
 
     useEffect(()=> {
-          if (orderList){
+          if ((Object.keys(orderList).length !== 0)){
             fetchRelevantProduct();
-          }
-          else {
+          } else {
             fetchOrder();
           }
-    }, [order]);
+    }, []);
     
     return(
     <div>
         <Navbar/>
         <div className="Outline">
             <Thanks/>
-            <OrderDetails order={order.current} orderList={orderList} productList={productList}/>
+            <OrderDetails orderDate={orderDate} orderID={orderID} order={order.current} orderList={orderList} productList={productList}/>
             <div className="btn-final">
                 <PrintButton text="Print"/>
                 {orderID && <EditButton orderList={orderList} OldProductList={productList} to="/" text="Edit"/>}
@@ -71,12 +72,12 @@ const Thanks = () => {
     );
 }
 
-const OrderDetails = ({order, orderList, productList}) => {
+const OrderDetails = ({order, orderList, productList, orderID, orderDate}) => {
     //Line doesn't work when adding a new product
     //Order Details runs before useEffect causing an undefined order for a few seconds
-    var order_num = (order?.length>1 ? order.order_id : orderList.order_id);
-    var order_date = (order?.length>1 ? order.date : orderList.date);
-    
+
+    var order_num = orderID;
+    var order_date = orderDate;
     return(
         <div className="order-outline">
             <div className="order-info">
