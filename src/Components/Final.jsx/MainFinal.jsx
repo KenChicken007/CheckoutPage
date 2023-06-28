@@ -1,21 +1,23 @@
 import "../../style.css";
-import React, { useEffect ,useState } from "react";
+import React, { useEffect,useRef, useState } from "react";
 import Navbar from "../Checkout/navbar";
 import { Link, useLocation} from "react-router-dom";
 import Axios from "axios";
 import { LinkButton } from "../Checkout/MainCheckout";
+import ReactToPrint from 'react-to-print';
 
 export default function MainFinal(){
     const [relevantProduct, setRelevantProduct] = useState([]);
     const [order, setOrder] = useState([]);
     const location = useLocation();
-    
+    const componentRef = useRef();
+
     const orderList = location.state.order ?? {};
     const orderID =   orderList.order_id ?? order.order_id; 
     const orderDate = orderList.date ?? order.date;
     const productList = (location.state.productList ? location.state.productList : relevantProduct);
-    console.log("Products: ",productList);
-    console.log("Order Date: ", orderDate);
+    console.log("Order: ",order);
+    console.log("OrderList: ", orderList);
 
     const fetchRelevantProduct = async () => {
         try{
@@ -50,11 +52,25 @@ export default function MainFinal(){
     <div>
         <Navbar/>
         <div className="Outline">
-            <Thanks/>
-            <OrderDetails orderDate={orderDate} orderID={orderID} order={order.current} orderList={orderList} productList={productList}/>
+            <div ref={componentRef}>
+                <Thanks/>
+                <OrderDetails orderDate={orderDate} orderID={orderID} productList={productList}/>
+            </div>
             <div className="btn-final">
-                <PrintButton text="Print"/>
-                {orderID && <EditButton orderList={orderList} OldProductList={productList} to="/" text="Edit"/>}
+                {/* <PrintButton  text="Print" OrderDetails={OrderDetails}/> */}
+                <ReactToPrint className="btn-blue"
+                    trigger={()=>{ 
+                        return(
+                            <div className="btn-checkout">
+                                <div onClick={OrderDetails.print} className="btn-blue">
+                                    print
+                                </div>        
+                            </div>
+                        );    
+                    }}
+                    content = {()=> componentRef.current}
+                />
+                <EditButton orderID={orderID} OldProductList={productList} to="/" text="Edit"/>
                 <NewButton to="/" text="New" />
                 <LinkButton to="/list" text="All Orders" />
             </div>
@@ -72,10 +88,8 @@ const Thanks = () => {
     );
 }
 
-const OrderDetails = ({order, orderList, productList, orderID, orderDate}) => {
-    //Line doesn't work when adding a new product
-    //Order Details runs before useEffect causing an undefined order for a few seconds
-
+const OrderDetails = ({ productList, orderID, orderDate}) => {
+    
     var order_num = orderID;
     var order_date = orderDate;
     return(
@@ -138,14 +152,3 @@ const EditButton = ({text, to, OldProductList, orderID}) => {
     </div>
     );
   }
-  const PrintButton = ({text}) => {
-
-    return(
-        <div className="btn-checkout">
-            <div onClick={window.print} className="btn-blue">
-                {text}
-            </div>        
-        </div>
-    );
-  }
-

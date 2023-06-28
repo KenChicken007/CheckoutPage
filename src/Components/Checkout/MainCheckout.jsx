@@ -21,10 +21,10 @@ const Content = () => {
       if (location.state){
         const OldProductList = location.state.OldProductList;
         const updatedProductList = OldProductList.map((oldProduct) => ({
-          id : oldProduct.product_id,
-          name: oldProduct.product_name,
-          price: oldProduct.product_price,
-          quantity: oldProduct.product_quantity,
+          id : oldProduct.product_id ?? oldProduct.id,
+          name: oldProduct.product_name ?? oldProduct.name,
+          price: oldProduct.product_price ??oldProduct.price,
+          quantity: oldProduct.product_quantity ?? oldProduct.quantity,
         }));
         len.current = OldProductList.length;
         console.log("Length: ",len.current);
