@@ -5,6 +5,29 @@ alter table products auto_increment = 0;
 DELETE FROM Orders;
 DELETE FROM Products;
 
+CREATE TABLE orders (
+  order_id int NOT NULL AUTO_INCREMENT,
+  name varchar(100) NOT NULL,
+  date date DEFAULT NULL,
+  total_price decimal(6,2) DEFAULT NULL,
+  PRIMARY KEY (order_id)
+);
+
+CREATE TABLE products (
+  product_id int NOT NULL AUTO_INCREMENT,
+  product_name varchar(255) DEFAULT NULL,
+  product_quantity int DEFAULT NULL,
+  product_price decimal(6,2) DEFAULT NULL,
+  PRIMARY KEY (product_id)
+);
+
+CREATE TABLE order_item (
+  order_id int DEFAULT NULL,
+  product_id int DEFAULT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders (order_id),
+  FOREIGN KEY (product_id) REFERENCES Products (product_id)
+);
+
 Drop table Products;
 describe order_item;
 show tables;
