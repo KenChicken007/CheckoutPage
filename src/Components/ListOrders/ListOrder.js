@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function ListOrder() {
   const [orders, setOrders] = useState([]);
+  const [isList, SetIsList] = useState(false);
 
   useEffect(() => {
     axios.get("http://localhost:3001/list").then((res) => {
@@ -43,7 +44,25 @@ export default function ListOrder() {
             </div>
           );
         })}
+        <MoreButton />
       </div>
+    );
+  };
+
+  const MoreButton = () => {
+    const handleClick = () => {
+      axios.get("http://localhost:3001/Expandedlist").then((res) => {
+        setOrders(res.data);
+      });
+    };
+    return (
+      <>
+        <div className="btn-list">
+          <div className="btn-blue btn_list_padding" onClick={handleClick}>
+            More
+          </div>
+        </div>
+      </>
     );
   };
 

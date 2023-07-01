@@ -16,7 +16,7 @@ const db = mysql.createConnection({
 
 const insertOrder = (name) => {
   return new Promise((resolve, reject) => {
-    const query = "INSERT INTO Orders (name, date) VALUES (?, CURDATE())";
+    const query = "INSERT INTO Orders (name, date) VALUES (?, curdate())";
     db.query(query, [name], (err, result) => {
       if (err) {
         console.log(err);
@@ -79,10 +79,10 @@ const updatePrice = (orderId) => {
 app.post("/create", async (req, res) => {
   const name = req.body.name;
   const productList = req.body.productList;
-
+  let orderId;
   try {
     const orderResult = await insertOrder(name);
-    const orderId = orderResult.insertId;
+    orderId = orderResult.insertId;
     console.log("OrderID:", orderId);
 
     const promise = productList.map(async (product) => {
@@ -101,7 +101,9 @@ app.post("/create", async (req, res) => {
 
     await Promise.all(promise);
 
-    res.send("Values Inserted");
+    let orderIdresp = JSON.stringify(orderId);
+    res.send(JSON.stringify(orderIdresp));
+    // res.status(200).send("Values Inserted");
   } catch (err) {
     console.error("Error executing queries:", err);
     res.status(500).send("Error occurred");
@@ -138,7 +140,6 @@ app.post("/update", async (req, res) => {
   try {
     const promise = productList.map(async (product, index) => {
       if (index < length) {
-        console.log(index);
         await updateProduct(
           product.id,
           product.name,
@@ -173,13 +174,16 @@ app.post("/update", async (req, res) => {
 });
 
 app.get("/list", (req, res) => {
-  db.query("SELECT * FROM Orders", (err, result) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(result);
+  db.query(
+    "SELECT * FROM Orders ORDER BY order_id DESC LIMIT 10",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(result);
+      }
     }
-  });
+  );
 });
 
 app.get("/final", (req, res) => {
@@ -200,6 +204,28 @@ app.get("/products/:orderId", (req, res) => {
                   (SELECT product_id FROM order_item WHERE order_id = ?)`;
 
   db.query(query, [orderID], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.get("/orders/:orderId", (req, res) => {
+  const orderID = req.params.orderId;
+  const query = "SELECT order_id, name, date FROM orders WHERE order_id = ?";
+  db.query(query, [orderID], (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
+app.get("/Expandedlist", (req, res) => {
+  const query = "select * from orders ORDER BY order_id DESC";
+  db.query(query, (err, result) => {
     if (err) {
       console.log(err);
     } else {

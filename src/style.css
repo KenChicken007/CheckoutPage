@@ -143,6 +143,12 @@
     padding-bottom: 2rem;
   }
 
+  .btn-list{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .btn-blue{
     background-color: rgba(47, 47, 211, 0.814);
     text-align: center;
@@ -153,7 +159,6 @@
     text-decoration: none;
     margin: auto 0;
     cursor: pointer;
-    
   }
 
   /* Final */

@@ -3,90 +3,90 @@ import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../Checkout/navbar";
 import { Link, useLocation } from "react-router-dom";
 import Axios from "axios";
-import { LinkButton } from "../Checkout/MainCheckout";
 import ReactToPrint from "react-to-print";
 
 export default function MainFinal() {
-  const [relevantProduct, setRelevantProduct] = useState([]);
+  const [productList, setProductList] = useState([]);
   const [order, setOrder] = useState([]);
   const location = useLocation();
   const componentRef = useRef();
-
-  const orderList = location.state.order ?? {};
-  const orderID = orderList.order_id ?? order.order_id;
-  const orderDate = orderList.date ?? order.date;
-  const productList = location.state.productList
-    ? location.state.productList
-    : relevantProduct;
-  console.log("Order: ", order);
-  console.log("OrderList: ", orderList);
+  console.log(location);
+  const orderId = location.state.orderId ?? location.state.order.order_id;
+  console.log("OrderID: ", orderId);
 
   const fetchRelevantProduct = async () => {
     try {
       const response = await Axios.get(
-        `http://localhost:3001/products/${orderList.order_id}`
+        `http://localhost:3001/products/${orderId}`
       );
 
       console.log("Resp: ", response);
-      setRelevantProduct(response.data.map((d) => [{ ...d }][0]));
+      setProductList(response.data.map((d) => [{ ...d }][0]));
     } catch (error) {
       console.log(error);
     }
   };
 
-  const fetchOrder = async () => {
-    await Axios.get("http://localhost:3001/final").then((res) => {
-      setOrder(res.data[res.data.length - 1]);
-      console.log(order.order_id);
-    });
+  const fetchOrderDetails = async () => {
+    const response = await Axios.get(`http://localhost:3001/orders/${orderId}`);
+    console.log("Order Resp: ", response.data);
+    setOrder(response.data);
   };
 
+  // const fetchOrder = async () => {
+  //   await Axios.get("http://localhost:3001/final").then((res) => {
+  //     setOrder(res.data[res.data.length - 1]);
+  //     console.log(order.order_id);
+  //   });
+  // };
+
   useEffect(() => {
-    if (Object.keys(orderList).length !== 0) {
-      fetchRelevantProduct();
-    } else {
-      fetchOrder();
-    }
+    fetchRelevantProduct();
+    fetchOrderDetails();
   }, []);
 
   return (
-    <div>
-      <Navbar />
-      <div className="Outline">
-        <div ref={componentRef}>
-          <Thanks />
-          <OrderDetails
-            orderDate={orderDate}
-            orderID={orderID}
-            productList={productList}
-          />
+    <>
+      {order.length < 1 ? (
+        <p>...Loading</p>
+      ) : (
+        <div>
+          <Navbar />
+          <div className="Outline">
+            <div ref={componentRef}>
+              <Thanks />
+              <OrderDetails
+                orderId={orderId}
+                order={order ?? {}}
+                productList={productList}
+              />
+            </div>
+            <div className="btn-final">
+              <ReactToPrint
+                className="btn-blue"
+                trigger={() => {
+                  return (
+                    <div className="btn-checkout">
+                      <div onClick={OrderDetails.print} className="btn-blue">
+                        print
+                      </div>
+                    </div>
+                  );
+                }}
+                content={() => componentRef.current}
+              />
+              <EditButton
+                orderId={orderId}
+                OldProductList={productList}
+                name={order[0].name}
+                to="/"
+                text="Edit"
+              />
+            </div>
+          </div>
         </div>
-        <div className="btn-final">
-          {/* <PrintButton  text="Print" OrderDetails={OrderDetails}/> */}
-          <ReactToPrint
-            className="btn-blue"
-            trigger={() => {
-              return (
-                <div className="btn-checkout">
-                  <div onClick={OrderDetails.print} className="btn-blue">
-                    print
-                  </div>
-                </div>
-              );
-            }}
-            content={() => componentRef.current}
-          />
-          <EditButton
-            orderID={orderID}
-            OldProductList={productList}
-            to="/"
-            text="Edit"
-          />
-          <NewButton to="/" text="New" />
-          <LinkButton to="/list" text="All Orders" />
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
@@ -99,18 +99,20 @@ const Thanks = () => {
   );
 };
 
-const OrderDetails = ({ productList, orderID, orderDate }) => {
-  var order_num = orderID;
-  var order_date = orderDate;
+const OrderDetails = ({ productList, order, orderId }) => {
   return (
     <div className="order-outline">
       <div className="order-info">
         <h2>Order Number</h2>
-        <p>{order_num}</p>
+        <p>{orderId}</p>
+      </div>
+      <div className="order-info">
+        <h2>Name</h2>
+        <p>{order[0].name ?? null}</p>
       </div>
       <div className="order-info">
         <h2>Date</h2>
-        <p>{order_date}</p>
+        <p>{order[0].date.slice(0, 10)}</p>
       </div>
       <div className="order-info">
         <div className="products-content">
@@ -139,12 +141,13 @@ const Orders = ({ prod }) => {
   );
 };
 
-const EditButton = ({ text, to, OldProductList, orderID }) => {
+const EditButton = ({ text, to, OldProductList, orderId, name }) => {
+  console.log("id:", name);
   return (
     <div className="btn-checkout">
       <Link
         to={to}
-        state={{ OldProductList: OldProductList, orderID: orderID }}
+        state={{ OldProductList: OldProductList, orderId: orderId, name: name }}
         className="btn-blue"
       >
         {text}

@@ -1,7 +1,7 @@
 import "../../style.css";
 import React, { useContext, useRef } from "react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 import { product, CheckoutContext, CheckoutProvider } from "./product";
 import axios from "axios";
@@ -13,7 +13,7 @@ const Content = () => {
 
   //Get the product List from final page
   const location = useLocation();
-  const orderId = useRef(0);
+  const [orderId, setOrderId] = useState(null);
   console.log(location);
   const len = useRef(0);
 
@@ -25,47 +25,67 @@ const Content = () => {
         id: oldProduct.product_id ?? oldProduct.id,
         name: oldProduct.product_name ?? oldProduct.name,
         price: oldProduct.product_price ?? oldProduct.price,
-        quantity: oldProduct.product_quantity ?? oldProduct.quantity,
+        prod_quantity: oldProduct.product_quantity ?? oldProduct.quantity,
       }));
       len.current = OldProductList.length;
-      console.log("Length: ", len.current);
+      setName(location.state.name);
       setProductList(updatedProductList);
-      orderId.current = location.state.orderID;
+      setOrderId(location.state.orderId);
     }
   }, []);
   console.log(productList);
 
+  // //Adding orders to mysql
+  // const addCustomer = async () => {
+  //   try {
+  //     const res = await axios.post("http://localhost:3001/create", {
+  //       name: name,
+  //       productList: productList,
+  //     });
+  //     return res.data;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   //Adding orders to mysql
   const addCustomer = async () => {
     try {
-      axios.post("http://localhost:3001/create", {
+      const res = await axios.post("http://localhost:3001/create", {
         name: name,
         productList: productList,
       });
+      const updatedOrderId = res.data;
+      setOrderId(updatedOrderId);
+      console.log("Working ADD");
     } catch (error) {
       console.log(error);
     }
   };
 
-  //Updating Orders
+  //Updating Orders to mysql
   const EditOrder = async () => {
+    // console.log(name, productList, orderId, len);
     try {
       axios.post("http://localhost:3001/update", {
         name: name,
         productList: productList,
-        orderId: orderId.current,
+        orderId: orderId,
         len: len.current,
       });
+      console.log("Working Edit");
     } catch (error) {
       console.log(error);
     }
   };
 
-  //Making sure products aren't selected twice in radio box
+  //Products selection from Radiobox
   const handleSelectProduct = (event) => {
     const selectedProduct = product.find(
       (prod) => prod.name === event.target.value
     );
+
+    //Making sure products aren't selected twice in radio box
     const productExists = productList.find(
       (prod) => prod.name === selectedProduct.name
     );
@@ -98,6 +118,7 @@ const Content = () => {
             onChange={(e) => setName(e.target.value)}
             type="text"
             placeholder="xyz"
+            value={name}
             required
           />
         </div>
@@ -127,10 +148,11 @@ const Content = () => {
       <TotalPrice />
       <Button
         addCustomer={location.state ? EditOrder : addCustomer}
+        orderId={orderId}
+        name={name}
         to="/final"
         text="Check Out"
       />
-      <LinkButton to="/list" text="All Orders" />
     </>
   );
 };
@@ -141,13 +163,14 @@ const RadioBox = ({ prod }) => {
 
 const ProductList = ({ prod, index }) => {
   const [quantity, setQuantity] = useState(0);
-  const { name, price } = prod;
+  const { name, price, prod_quantity } = prod;
   const location = useLocation();
   const [, setProductList, , setTotalPrice] = useContext(CheckoutContext);
 
   useEffect(() => {
     if (location.state) {
-      setQuantity(0);
+      setQuantity(prod_quantity);
+      delete prod.prod_quantity;
     }
   }, []);
 
@@ -227,29 +250,51 @@ const TotalPrice = () => {
   );
 };
 
-const Button = ({ text, to, addCustomer }) => {
+const Button = ({ text, to, addCustomer, orderId, name }) => {
   const [productList] = useContext(CheckoutContext);
+  const [isNavigate, setIsNavigate] = useState(false);
+  const navigate = useNavigate();
+  console.log(name);
+  const handleButtonClick = async () => {
+    if (!name) {
+      alert("Enter your name");
+      return;
+    }
+    try {
+      await addCustomer();
+      setIsNavigate(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (isNavigate) {
+      handleNextPage();
+    }
+  }, [isNavigate]);
+
+  const handleNextPage = async () => {
+    if (orderId) {
+      navigate(to, {
+        state: {
+          productList: productList,
+          orderId: orderId,
+        },
+      });
+    }
+  };
 
   return (
     <div className="btn-checkout">
-      <Link
-        onClick={addCustomer}
+      <button
+        onClick={handleButtonClick}
         to={to}
         className="btn-blue"
-        state={{ productList: productList }}
+        state={{ orderId: orderId }}
       >
         {text}
-      </Link>
-    </div>
-  );
-};
-
-const LinkButton = ({ text, to }) => {
-  return (
-    <div className="btn-checkout">
-      <Link to={to} className="btn-blue">
-        {text}
-      </Link>
+      </button>
     </div>
   );
 };
@@ -266,5 +311,3 @@ export default function MainCheckout() {
     </>
   );
 }
-
-export { LinkButton };
