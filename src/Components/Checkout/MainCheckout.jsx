@@ -1,7 +1,7 @@
 import "../../style.css";
 import React, { useContext, useRef } from "react";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 import { product, CheckoutContext, CheckoutProvider } from "./product";
 import axios from "axios";
@@ -10,7 +10,7 @@ import { useLocation } from "react-router-dom";
 const Content = () => {
   const [productList, setProductList] = useContext(CheckoutContext);
   const [name, setName] = useState("");
-
+  const [discount, setDiscount] = useState(0);
   //Get the product List from final page
   const location = useLocation();
   const [orderId, setOrderId] = useState(null);
@@ -145,6 +145,7 @@ const Content = () => {
           <ProductList index={index} key={prod.id} prod={prod} />
         ))}
       </div>
+      <Discount discount={discount} setDiscount={setDiscount} />
       <TotalPrice />
       <Button
         addCustomer={location.state ? EditOrder : addCustomer}
@@ -153,6 +154,51 @@ const Content = () => {
         to="/final"
         text="Check Out"
       />
+    </>
+  );
+};
+
+const Discount = ({ discount, setDiscount }) => {
+  const [, , totalPrice, setTotalPrice] = useContext(CheckoutContext);
+  const [ogPrice, setOgPrice] = useState();
+  const [num, setNum] = useState(0);
+  console.log("OGPrice: ", ogPrice);
+  console.log("TotalPrice: ", totalPrice);
+
+  const getDiscount = () => {
+    if (discount <= 0) {
+      if (totalPrice < ogPrice) {
+        setTotalPrice(ogPrice);
+      } else {
+        alert("Enter a valid number");
+        return;
+      }
+    }
+
+    if (totalPrice === ogPrice) {
+      // Apply discount
+      setTotalPrice(totalPrice * (1 - discount / 100));
+    } else {
+      // Revert back to original price and recalculate discount
+      setTotalPrice(ogPrice * (1 - discount / 100));
+    }
+  };
+
+  useEffect(() => {
+    if (totalPrice && discount <= 0) {
+      setOgPrice(totalPrice);
+    }
+  }, [totalPrice]);
+
+  return (
+    <>
+      <div>
+        <label>Enter Discount(%)</label>
+        <input type="Number" onChange={(e) => setDiscount(e.target.value)} />
+        <button onClick={getDiscount} disabled={totalPrice < 1}>
+          Get Discount
+        </button>
+      </div>
     </>
   );
 };
@@ -255,6 +301,7 @@ const Button = ({ text, to, addCustomer, orderId, name }) => {
   const [isNavigate, setIsNavigate] = useState(false);
   const navigate = useNavigate();
   console.log(name);
+
   const handleButtonClick = async () => {
     if (!name) {
       alert("Enter your name");

@@ -234,6 +234,20 @@ app.get("/Expandedlist", (req, res) => {
   });
 });
 
+app.get("/specificList", (req, res) => {
+  const r1 = req.query.R1;
+  const r2 = req.query.R2;
+  console.log(r1, r2);
+  const query = "select * from orders where order_id between ? and ?";
+  db.query(query, [r1, r2], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 app.listen(3001, () => {
   console.log("Server Running");
 });
