@@ -38,7 +38,7 @@ export default function ListOrder() {
     return (
       <div>
         <div className="orders">
-          <div className="order-outline order">
+          <div className="order">
             <h2>Order ID</h2>
             <h2>Name</h2>
             <h2>Total Amount</h2>
@@ -61,8 +61,8 @@ export default function ListOrder() {
     return (
       <>
         <div className="btn-list">
-          <div className="btn-blue btn_list_padding" onClick={MoreOrders}>
-            More
+          <div className="btn-blue" onClick={MoreOrders}>
+            All
           </div>
         </div>
       </>
@@ -73,17 +73,7 @@ export default function ListOrder() {
     const [text, setText] = useState("");
     const [R1, setR1] = useState();
     const [R2, setR2] = useState();
-    // const filterOrder = async () => {
-    //   const filteredOrders = orders.filter((order) => {
-    //     return order.name.toLowerCase().includes(text.toLowerCase());
-    //   });
 
-    //   if (filteredOrders.length < 1) {
-    //     alert("Enter a name");
-    //   } else {
-    //     setOrders(filteredOrders);
-    //   }
-    // };
     const SpecificOrders = async () => {
       const res = await axios.get("http://localhost:3001/specificList", {
         params: {
@@ -131,21 +121,34 @@ export default function ListOrder() {
     return (
       <>
         <div className="inputs">
-          <div>
+          <div className="input">
             <label htmlFor="">Search by Name: </label>
             <input
+              className="input-name"
               type="text"
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
-            <button onClick={searchByName}>Search</button>
+            <button className="input-btn" onClick={searchByName}>
+              Search
+            </button>
           </div>
-          <div className="range">
+          <div className="input">
             <label htmlFor="">Start</label>
-            <input type="number" onChange={(e) => setR1(e.target.value)} />
+            <input
+              className="input-range"
+              type="number"
+              onChange={(e) => setR1(e.target.value)}
+            />
             <label htmlFor="">End</label>
-            <input type="number" onChange={(e) => setR2(e.target.value)} />
-            <button onClick={searchById}>Search</button>
+            <input
+              className="input-range"
+              type="number"
+              onChange={(e) => setR2(e.target.value)}
+            />
+            <button className="input-btn" onClick={searchById}>
+              Search
+            </button>
           </div>
         </div>
       </>

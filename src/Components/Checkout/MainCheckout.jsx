@@ -161,9 +161,6 @@ const Content = () => {
 const Discount = ({ discount, setDiscount }) => {
   const [, , totalPrice, setTotalPrice] = useContext(CheckoutContext);
   const [ogPrice, setOgPrice] = useState();
-  const [num, setNum] = useState(0);
-  console.log("OGPrice: ", ogPrice);
-  console.log("TotalPrice: ", totalPrice);
 
   const getDiscount = () => {
     if (discount <= 0) {
