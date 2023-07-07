@@ -46,7 +46,6 @@
 
   .input{
     display: flex;
-    width: 100%;
     justify-content: center;
     margin-top: 2rem;
   }
@@ -177,6 +176,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 2rem;
   }
 
   .btn-blue{

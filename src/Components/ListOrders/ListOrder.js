@@ -5,12 +5,24 @@ import { Link } from "react-router-dom";
 
 export default function ListOrder() {
   const [orders, setOrders] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    axios.get("http://localhost:3001/list").then((res) => {
-      setOrders(res.data);
-    });
-  }, []);
+    GetOrders();
+  }, [currentIndex]);
+
+  const GetOrders = () => {
+    console.log(currentIndex);
+    axios
+      .get("http://localhost:3001/list", {
+        params: {
+          currentIndex: currentIndex,
+        },
+      })
+      .then((res) => {
+        setOrders(res.data);
+      });
+  };
 
   const MoreOrders = async () => {
     try {
@@ -52,18 +64,40 @@ export default function ListOrder() {
             </div>
           );
         })}
-        <MoreButton MoreOrders={MoreOrders} />
+        <OffsetButton
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          GetOrders={GetOrders}
+        />
       </div>
     );
   };
 
-  const MoreButton = ({ MoreOrders }) => {
+  const OffsetButton = ({ setCurrentIndex, currentIndex }) => {
+    console.log(orders);
     return (
       <>
         <div className="btn-list">
-          <div className="btn-blue" onClick={MoreOrders}>
-            All
-          </div>
+          {currentIndex >= 10 && (
+            <div
+              className="btn-blue"
+              onClick={() => setCurrentIndex((prev) => prev - 10)}
+            >
+              Prev
+            </div>
+          )}
+          {orders.length > 0 ? (
+            <div
+              className="btn-blue"
+              onClick={() => setCurrentIndex((prev) => prev + 10)}
+            >
+              Next
+            </div>
+          ) : (
+            <h1>
+              <b> No further Orders</b>
+            </h1>
+          )}
         </div>
       </>
     );

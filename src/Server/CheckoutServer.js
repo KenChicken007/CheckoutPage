@@ -174,16 +174,16 @@ app.post("/update", async (req, res) => {
 });
 
 app.get("/list", (req, res) => {
-  db.query(
-    "SELECT * FROM Orders ORDER BY order_id DESC LIMIT 10",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        res.send(result);
-      }
+  const offset = req.query.currentIndex;
+  console.log(offset);
+  const query = `SELECT * FROM Orders ORDER BY order_id DESC LIMIT ${offset}, 10`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
     }
-  );
+  });
 });
 
 app.get("/final", (req, res) => {
