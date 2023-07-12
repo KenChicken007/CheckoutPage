@@ -135,7 +135,7 @@ const Content = () => {
 
       <div className="products">
         <div className="products-content">
-          <h2>Products</h2>
+          <h2 className="product-title">Products</h2>
           <h2>Quantity</h2>
           <h2 className="total-price">Total Price</h2>
           <h2></h2>
@@ -189,7 +189,7 @@ const Discount = ({ discount, setDiscount }) => {
 
   return (
     <>
-      <div>
+      <div style={{ margin: "3rem 0" }}>
         <label>Enter Discount(%)</label>
         <input type="Number" onChange={(e) => setDiscount(e.target.value)} />
         <button onClick={getDiscount} disabled={totalPrice < 1}>
@@ -248,10 +248,7 @@ const ProductList = ({ prod, index }) => {
   return (
     <>
       <div className="products-content">
-        <div>
-          <img src="" alt="" />
-          {name}
-        </div>
+        <div>{name}</div>
         <div className="btn">
           <button onClick={() => lowerQuantity()}>-</button>
           {quantity}

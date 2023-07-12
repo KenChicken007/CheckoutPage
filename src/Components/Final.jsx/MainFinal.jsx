@@ -168,10 +168,7 @@ const Orders = ({ prod }) => {
   return (
     <>
       <div className="products-content">
-        <div>
-          <img src="" alt="" />
-          {prod.name || prod.product_name}
-        </div>
+        <div>{prod.name || prod.product_name}</div>
         <div className="quantity">{prod.quantity || prod.product_quantity}</div>
       </div>
     </>

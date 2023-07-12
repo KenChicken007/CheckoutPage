@@ -83,6 +83,11 @@
     display: flex;
     align-items: center;
   }
+
+  .product-title{
+    display: flex;
+    align-items: flex-start;
+  }
   
   .products-content img {
     width: 50px; /* Adjust the size as needed */
@@ -156,7 +161,7 @@
 
   .quantity{
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .btn-checkout{
