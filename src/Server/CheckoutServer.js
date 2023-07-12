@@ -173,6 +173,31 @@ app.post("/update", async (req, res) => {
   }
 });
 
+app.post("/paid", (req, res) => {
+  var checked = req.body.checked;
+  const orderId = req.body.orderId;
+  console.log(checked);
+
+  if (checked === true) {
+    checked = "True";
+    console.log("Working");
+  } else {
+    checked = "False";
+  }
+  try {
+    const query = "update Orders set paid = ? where order_id = ?";
+    db.query(query, [checked, orderId], (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+    });
+    res.send("Values Inserted");
+  } catch (err) {
+    console.log("Error executing queries: ", err);
+    res.status(500).send("Error Occured");
+  }
+});
+
 app.get("/list", (req, res) => {
   const offset = req.query.currentIndex;
   console.log(offset);
@@ -240,6 +265,18 @@ app.get("/specificList", (req, res) => {
   console.log(r1, r2);
   const query = "select * from orders where order_id between ? and ?";
   db.query(query, [r1, r2], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.get("/paidCheck", (req, res) => {
+  const orderId = req.query.orderId;
+  query = "Select paid from orders where order_id = ?";
+  db.query(query, [orderId], (err, result) => {
     if (err) {
       console.log(err);
     } else {

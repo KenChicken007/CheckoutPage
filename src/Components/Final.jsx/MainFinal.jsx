@@ -9,10 +9,9 @@ export default function MainFinal() {
   const [productList, setProductList] = useState([]);
   const [order, setOrder] = useState([]);
   const location = useLocation();
+  const [checked, setChecked] = useState(false);
   const componentRef = useRef();
-  console.log(location);
   const orderId = location.state.orderId ?? location.state.order.order_id;
-  console.log("OrderID: ", orderId);
 
   const fetchRelevantProduct = async () => {
     try {
@@ -20,7 +19,6 @@ export default function MainFinal() {
         `http://localhost:3001/products/${orderId}`
       );
 
-      console.log("Resp: ", response);
       setProductList(response.data.map((d) => [{ ...d }][0]));
     } catch (error) {
       console.log(error);
@@ -29,20 +27,31 @@ export default function MainFinal() {
 
   const fetchOrderDetails = async () => {
     const response = await Axios.get(`http://localhost:3001/orders/${orderId}`);
-    console.log("Order Resp: ", response.data);
+
     setOrder(response.data);
   };
 
-  // const fetchOrder = async () => {
-  //   await Axios.get("http://localhost:3001/final").then((res) => {
-  //     setOrder(res.data[res.data.length - 1]);
-  //     console.log(order.order_id);
-  //   });
-  // };
+  const fetchPaidCheck = async () => {
+    const res = await Axios.get("http://localhost:3001/paidCheck", {
+      params: {
+        orderId: orderId,
+      },
+    });
+
+    console.log("Res Before: ", res.data[0].paid);
+
+    if (res.data[0].paid === "True") {
+      setChecked(true);
+      console.log("Working");
+    } else setChecked(false);
+
+    console.log("Res After: ", res.data[0].paid);
+  };
 
   useEffect(() => {
     fetchRelevantProduct();
     fetchOrderDetails();
+    fetchPaidCheck();
   }, []);
 
   return (
@@ -55,6 +64,11 @@ export default function MainFinal() {
           <div className="Outline">
             <div ref={componentRef}>
               <Thanks />
+              <PaidCheckbox
+                checked={checked}
+                setChecked={setChecked}
+                orderId={orderId}
+              />
               <OrderDetails
                 orderId={orderId}
                 order={order ?? {}}
@@ -89,6 +103,29 @@ export default function MainFinal() {
     </>
   );
 }
+
+const PaidCheckbox = ({ setChecked, checked, orderId }) => {
+  console.log(checked);
+  useEffect(() => {
+    if (checked != null) {
+      Axios.post("http://localhost:3001/paid", {
+        checked: checked,
+        orderId: orderId,
+      });
+    }
+  }, [checked]);
+
+  return (
+    <div style={{ marginBottom: "2rem" }}>
+      <label style={{ marginRight: "1rem" }}>Paid:</label>
+      <input
+        type="checkbox"
+        checked={checked ? true : false}
+        onChange={() => setChecked(!checked)}
+      />
+    </div>
+  );
+};
 
 const Thanks = () => {
   return (
@@ -142,7 +179,6 @@ const Orders = ({ prod }) => {
 };
 
 const EditButton = ({ text, to, OldProductList, orderId, name }) => {
-  console.log("id:", name);
   return (
     <div className="btn-checkout">
       <Link
@@ -150,16 +186,6 @@ const EditButton = ({ text, to, OldProductList, orderId, name }) => {
         state={{ OldProductList: OldProductList, orderId: orderId, name: name }}
         className="btn-blue"
       >
-        {text}
-      </Link>
-    </div>
-  );
-};
-
-const NewButton = ({ text, to }) => {
-  return (
-    <div className="btn-checkout">
-      <Link to={to} className="btn-blue">
         {text}
       </Link>
     </div>

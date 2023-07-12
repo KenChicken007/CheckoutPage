@@ -39,6 +39,11 @@ alter table products drop primary key;
 ALTER TABLE order_item DROP FOREIGN KEY product_id;
 
 show tables;
+describe orders;
+alter table Orders modify paid varchar(5) default "false";
+
+update Orders set paid = "True" where order_id = 3692;
+select * from orders;
 
 UPDATE Products
 JOIN order_item ON Products.product_id = order_item.product_id
@@ -76,3 +81,5 @@ WHERE t2.order_id IS NULL;
 SELECT t1.* FROM orders t1 LEFT JOIN ( SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 10) AS t2 ON t1.order_id = t2.order_id WHERE t2.order_id IS NULL order by order_id desc;
 
 select * from orders;
+
+select count(*)/10 from orders;
